@@ -34,11 +34,20 @@ async function run() {
     await client.connect();
 
     const productsCollection = client.db("vegFoodsDB").collection("products");
+    const cartCollection = client.db("vegFoodsDB").collection("carts");
 
-    // all product related apis
+    // ---------------------- all product related apis
     app.get('/allproducts', async(req, res) =>{
         const products = await productsCollection.find().toArray();
         res.send(products)
+    })
+
+    // ------------------- Cart Related Apis -----------
+    app.post('/carts', async(req, res) =>{
+      const item = req.body;
+      console.log(item)
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
