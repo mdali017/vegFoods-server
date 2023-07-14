@@ -7,8 +7,8 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-app.get('/', async(req, res) =>{
-    res.send('VegFoods Server is Running');
+app.get('/', async (req, res) => {
+  res.send('VegFoods Server is Running');
 })
 
 // ---------------------------------------
@@ -16,7 +16,7 @@ app.get('/', async(req, res) =>{
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.PASSWORD}@cluster0.5julrfk.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -36,17 +36,35 @@ async function run() {
     const productsCollection = client.db("vegFoodsDB").collection("products");
     const cartCollection = client.db("vegFoodsDB").collection("carts");
 
-    // ---------------------- all product related apis
-    app.get('/allproducts', async(req, res) =>{
-        const products = await productsCollection.find().toArray();
-        res.send(products)
+    // ------------------------------------------------------------ All product related apis
+    app.get('/allproducts', async (req, res) => {
+      const products = await productsCollection.find().toArray();
+      res.send(products)
     })
 
-    // ------------------- Cart Related Apis -----------
-    app.post('/carts', async(req, res) =>{
+    // -------------------------------------------------------------- Cart Related Apis -----------
+    app.post('/carts', async (req, res) => {
       const item = req.body;
-      console.log(item)
+      // console.log(item)
       const result = await cartCollection.insertOne(item);
+      res.send(result);
+    })
+
+    app.get('/carts', async (req, res) => {
+      const email = req.query.email;
+
+      if (!email) {
+        res.send([])
+      }
+      const query = { email: email };
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.delete('/carts/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     })
 
@@ -61,6 +79,6 @@ async function run() {
 run().catch(console.dir);
 
 
-app.listen(port, () =>{
-    console.log(`VegFoods Sever is Running on Port : ${port}`)
+app.listen(port, () => {
+  console.log(`VegFoods Sever is Running on Port : ${port}`)
 })
