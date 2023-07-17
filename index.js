@@ -35,6 +35,7 @@ async function run() {
 
     const productsCollection = client.db("vegFoodsDB").collection("products");
     const cartCollection = client.db("vegFoodsDB").collection("carts");
+    const usersCollection = client.db("vegFoodsDB").collection("users");
 
     // ------------------------------------------------------------ All product related apis
     app.get('/allproducts', async (req, res) => {
@@ -66,6 +67,26 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result);
+    })
+
+    // -------------------------------------------------------------- User Related Apis -----------
+    app.post('/users', async (req, res) =>{
+      const user = req.body;
+      console.log(user);
+      const query = {email: user.email};
+      const existingUser = await usersCollection.findOne(query);
+      console.log(existingUser)
+      if(existingUser){
+        return res.send({message: 'user already exists'})
+      }
+      const result = await usersCollection.insertOne(user)
+      res.send(result);
+    })
+
+    app.get('/users', async (req, res) =>{
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+      // Module => 78-3: finish
     })
 
     // Send a ping to confirm a successful connection
